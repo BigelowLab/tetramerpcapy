@@ -28,13 +28,14 @@ def has_blast(app = 'blastn'):
 def run_blast(cmd = 'blastn -db nt -num_threads 7 -num_alignments 10 -evalue 10',
     in_file = 'example-outliers.fasta',
     out_file = 'example-outliers.xml',
-    verbose = True):
+    verbose = False):
     '''
     Run the blast executable
     
     @param cmd          the command srting less input/output info
-    @param in_file   the name of the input fasta file
+    @param in_file      the name of the input fasta file
     @param out_file     the name of the xml_file to output
+    @param verbose      boolean, if True then echo the blast command string
     @return             the value returned by subprocess.call           
     '''
              

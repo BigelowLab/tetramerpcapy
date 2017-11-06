@@ -35,7 +35,8 @@ setup(
         'click',
         'pandas',
         'Bio',
-        'matplotlib'],
+        'matplotlib',
+        'adjustText'],
     entry_points='''
         [console_scripts]
         tetramerpca=tetramerpca:main

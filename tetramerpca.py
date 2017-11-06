@@ -2,6 +2,7 @@
 __version_info__ = (0, 0, 1)
 __version__ = '.'.join(map(str, __version_info__))
 
+import click
 import Bio
 import numpy as np
 import pandas as pd
@@ -65,12 +66,13 @@ tetra['params'] = {
 
 
 def main(filename, outdir, window, step, blast_cmd, db, num_threads, 
-    num_alignments, evalue, tetra):
+    num_alignments, evalue, tetra = tetra):
     
     if outdir is None:
         outdir = os.path.dirname(filename)
     
     tetra['filename']           = filename
+    tetra['outdir']             = outdir
     tetra['name']               = misc.get_input_name(filename)
     tetra['params']['window']   = window
     tetra['params']['step']     = step
@@ -88,19 +90,20 @@ def main(filename, outdir, window, step, blast_cmd, db, num_threads,
     tetra['N'] = N
     tetra['DF'] = DF
     
-    # select and write the shorties
-    tetra['df_fails'] = tab.tabulate_fails(N, tetra['X'])
+    # select and write the fails
+    ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-fails.csv']))
+    tetra['df_fails'] = tab.tabulate_fails(N, tetra['X'],
+        filename = ofile)
     
-    # obvious
     P = PCA(DF)
     tetra['P'] = P
     
-    # assemble and write the loadings
+    # assemble loadings
     tetra['loadings'] = pd.DataFrame(P.Wt[:, range(0, tetra['params']['npc'])],
         index = list(DF.columns.values), 
         columns =['PC%i' % i for i in range(1,tetra['params']['npc']+1)])    
 
-    # assemble and write the PCs
+    # assemble PCs
     tetra['x'] = pd.DataFrame(P.Y[:,range(0, tetra['params']['npc'])], 
         index = list(DF.index.values), 
         columns =['PC%i' % i for i in range(1,tetra['params']['npc']+1)])    
@@ -109,28 +112,38 @@ def main(filename, outdir, window, step, blast_cmd, db, num_threads,
     tetra['outliers'] = tab.select_outliers(tetra['x'])
     outlier_seqs = misc.extract_outliers(tetra['outliers'], tetra['X'])
 
+    ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-counts.csv']))
     ok = inout.write_normalized_counts(tetra['DF'], 
-        filename = 'example-counts.csv')
-    ok = inout.write_loadings(tetra['loadings'], 
-        filename = 'example-loadings.csv')
-    ok = inout.write_PC(tetra['x'], 
-        filename = 'example-tetramer-PC.csv')
-    ok = inout.write_fasta(outlier_seqs,
-        filename = 'example-outliers.fasta')
+        filename = ofile)
     
-    ok = 0 == blast.run_blast(in_file = 'example-outliers.fasta', 
-        out_file = 'example-outliers.xml')
+    ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-loadings.csv']))
+    ok = inout.write_loadings(tetra['loadings'], 
+        filename = ofile)
+    
+    ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-tetramer-PC.csv']))
+    ok = inout.write_PC(tetra['x'], 
+        filename = ofile)
+    
+    ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-outliers.fasta']))
+    ok = inout.write_fasta(outlier_seqs,
+        filename = ofile)
+    
+    ifile = ofile
+    ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-outliers.xml']))
+    ok = 0 == blast.run_blast(in_file = ifile,  out_file = ofile)
  
     if ok:
-         nrec = blast.blast_to_table(in_file = 'example-outliers.xml',
-             out_file = 'example-outliers.tsv')
-         if nrec > 0:
-             tetra['xblast'] = inout.read_blast_table(filename = 'example-outliers.tsv')   
+        ifile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-outliers.xml']))
+        ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-outliers.tsv']))
+        nrec = blast.blast_to_table(in_file = ifile, out_file = ofile)
+        if nrec > 0:
+            tetra['xblast'] = inout.read_blast_table(filename = ofile)   
     
-    r = draw.plot_tetramer(tetra, filename = 'example-PC.pdf')
+    ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-PC.pdf']))
+    r = draw.plot_tetramer(tetra, filename = ofile)
     
     return tetra
     
 if __name__=='__main__':
-main()
+    main()
     

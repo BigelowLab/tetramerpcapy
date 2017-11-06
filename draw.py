@@ -6,6 +6,7 @@ import pandas as pd
 import re
 import misc
 import datetime
+from adjustText import adjust_text
 
 
 def get_explanation(X):
@@ -107,7 +108,7 @@ def plot_PCvPC(X, iplot = 0, pdf = None, add_blast = True):
     nplots = nmpc.shape[0]
     blastinfo = X['params']['blastcmd'].split(" ")
     date = datetime.date.today().strftime("%Y-%m-%d")
-    subtitle_stub = 'window = {0}  step = {1}\n{2} aganst GenBank {3}, {4}'
+    subtitle_stub = 'window = {0}  step = {1}\n{2} against GenBank {3}, {4}'
     
     out = X['plot']['out'] 
     x = X['plot']['x']    
@@ -141,6 +142,15 @@ def plot_PCvPC(X, iplot = 0, pdf = None, add_blast = True):
     box = ax.get_position()
     ax.set_position([box.x0, box.y0 + box.height * (1-dy),
                      box.width, box.height * dy])
+    
+    xpad = [-10, 10]
+    xlim = ax.get_xlim()
+    new_xlim = [xlim[0] + xpad[0], xlim[1] + xpad[1]]
+    ax.set_xlim(new_xlim)
+    
+    print("old" , '{} {}'.format(xlim[0], xlim[1]))
+    print("new" , '{} {}'.format(new_xlim[0], new_xlim[1]))
+    
     
     # now get ready to plot outliers and capture legend info
     # the references to x and y are a bit flummoxed here.  We select outliers in each dimension (each PC)
@@ -215,12 +225,14 @@ def plot_PCvPC(X, iplot = 0, pdf = None, add_blast = True):
         blast_text = blast_hit_text(X['xblast'])
         y = x.copy()
         y.index = y.index.droplevel('name')
+        texts = dict()
         for k in blast_text.keys():
             ha = 'left' if y.loc[k,px] > 0 else 'right'
-            ax.text(y.loc[k,px], y.loc[k,py], blast_text[k],
+            txt = ax.text(y.loc[k,px], y.loc[k,py], blast_text[k],
                 color = colors['blue'], size = 'x-small',
                 horizontalalignment = ha)
-        
+            texts[k] = txt
+        adjust_text(texts.values())
         
     pdf.savefig()
     plt.close()       

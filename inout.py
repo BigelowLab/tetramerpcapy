@@ -85,7 +85,7 @@ def write_fasta(x, filename = 'example-outliers.fasta'):
     @param  filename the file to write to - will overwrite
     @return whatever is returned by Bio.SeqIO.write
     '''
-    SeqIO.write(x, "example-outliers.fasta", "fasta")
+    SeqIO.write(x, filename, "fasta")
     
     
 def read_blast_table(filename = 'example-outliers.tsv'):
