@@ -74,7 +74,7 @@ def blast_hit_text(x, max_len = 30, no_hit_text = "no significant hits"):
     '''
     
     stub = "%0.10s blast score = %0.0f\n%0." + str(max_len) + "s"
-    def do_one(x, stub = '%0.10s blast score = %0.0f\n%0.30s'):
+    def do_one(x, stub = '%0.10s, hsp-bit-score = %0.0f\n%0.30s'):
         txt = stub % (x['Hit_accession'], float(x['Hsp_bit_score']),x['Hit_def'] )
         if x['Hit_len'] <= 0:
             txt = no_hit_text
@@ -147,10 +147,6 @@ def plot_PCvPC(X, iplot = 0, pdf = None, add_blast = True):
     xlim = ax.get_xlim()
     new_xlim = [xlim[0] + xpad[0], xlim[1] + xpad[1]]
     ax.set_xlim(new_xlim)
-    
-    print("old" , '{} {}'.format(xlim[0], xlim[1]))
-    print("new" , '{} {}'.format(new_xlim[0], new_xlim[1]))
-    
     
     # now get ready to plot outliers and capture legend info
     # the references to x and y are a bit flummoxed here.  We select outliers in each dimension (each PC)
@@ -229,10 +225,11 @@ def plot_PCvPC(X, iplot = 0, pdf = None, add_blast = True):
         for k in blast_text.keys():
             ha = 'left' if y.loc[k,px] > 0 else 'right'
             txt = ax.text(y.loc[k,px], y.loc[k,py], blast_text[k],
-                color = colors['blue'], size = 'x-small',
+                color = colors['blue'], size = 'xx-small',
                 horizontalalignment = ha)
             texts[k] = txt
-        adjust_text(texts.values())
+        adjust_text(texts.values(), 
+            arrowprops=dict(arrowstyle="-", color='black', lw=0.5))
         
     pdf.savefig()
     plt.close()       
