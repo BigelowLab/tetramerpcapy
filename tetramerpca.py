@@ -46,23 +46,23 @@ tetra['params'] = {
 
 @click.option('--blast_cmd',
               default='blastn',
-              help='name of the bast application possibly with path')
+              help='name of the blast application possibly with path, default is blastn')
             
 @click.option('--db',
               default='nt',
-              help='blast database name possibly with path')
+              help='blast database name possibly with path, default in nt')
         
 @click.option('--num_threads',
               default='12',
-              help='blast option passed through')
+              help='blast option passed through, default is 12')
              
 @click.option('--num_alignments',
               default='10',
-              help='blast option passed through')
+              help='blast option passed through, default is 10')
              
 @click.option('--evalue',
               default='10',
-              help='blast option passed through')    
+              help='blast option passed through, default is 10')    
 
 
 def main(filename, outdir, window, step, blast_cmd, db, num_threads, 
