@@ -34,7 +34,7 @@ setup(
     install_requires=[
         'click',
         'pandas',
-        'Bio',
+        'biopython',
         'matplotlib',
         'adjustText'],
     entry_points='''
