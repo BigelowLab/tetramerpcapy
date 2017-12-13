@@ -6,6 +6,7 @@ import lut
 import numpy as np
 import pandas as pd
 import misc
+import string
 from Bio import Seq
 from Bio import SeqRecord
 from Bio import SeqUtils
@@ -30,6 +31,137 @@ def get_range(y, col = 'PC1'):
                       'max_value': y.loc[imax,col]},
                       index = [imin.rsplit("_",1)[0]] )
     return r
+
+def select_outliers_pd(x, unpack = True):
+    '''
+    Selects 'outliers' from a [nwindow x nPC] dataframe.  
+    Selection of outliers occurs in PCa vs PCb (e.g. PC1 v PC2, PC3 v PC4, ...) 
+    pairs.  Here is pseudocode that operates on input_df dataframe 
+    
+    for each PCa vs PCb pairing do:
+      
+      df = input_df.copy()
+      
+      sort df on PCa
+      select most positive windows (PCa's wpos1 and wpos2)
+      remove from df all windows that come from wpos1 and wpos2 contigs
+      select most negative windows (PCa's wneg1 and wneg2)
+      remove from df all windows that come from wneg1 and wneg2 contigs
+    
+      sort df on PCb
+      select most positive windows (PCb's wpos1 and wpos2)
+      remove from df all windows that come from wpos1 and wpos2 contigs
+      select most negative windows (PCb's wneg1 and wneg2)
+    
+    
+    @param x dataframe [nwindows x nPC], indexed by windowname (wname)
+    @param unpack boolean, if True reshape to match the tetramerpca workflow
+    @return dataframe depending upon unpack value
+      unpack = False, indexed by PC with 4 columns wpos1,wpos2, wneg1, wneg2 where
+        the columns are the window names ala "contigname_start-stop"
+      unpack = True, indexed by contigname (cname) with 3 columns typ (hi/lo),
+        PC (PC1, PC2, ...) and name (wname)
+    '''
+    def unpack_select(x):
+        '''
+        Given the dense outlier selection data frame, make the long form used by 
+        tetramerpca.
+        
+        @param x a data frame indexed by PC wih 4 columns wpos1, wpos2, wneg1 and wneg2
+        @return a data frame indexed by contig name with columns name (wname), typ,
+            and PC
+        '''
+        x = x.unstack().reset_index()
+        x = x.replace("wpos1", "hi")
+        x = x.replace("wpos2", "hi")
+        x = x.replace("wneg1", "lo")
+        x = x.replace("wneg2", "lo")
+        x.columns = ['typ', 'PC', 'name']
+        x['cname'] = extract_cname(list(x['name'].values))
+        x = x.set_index('cname')
+        return x
+    
+    def split_name(nm = 'foo_a_b_1-500'):
+        ''' Split the input into 4 parts 
+        
+        [name (foo_a_b), window (1-500), start (1) end (500)]
+        
+        @param nm the string to split
+        @return a four element list 
+        '''
+        a = string.rsplit(nm, "_", 1)
+        b = string.split(a[1], "-")
+        return a + [int(v) - 1 for v in b] 
+    
+    def extract_cname(wn = ["A_1-1600","B_201-1800"]):
+        if not isinstance(wn, list):
+            if isinstance(wn, str):
+                wn = [wn]
+            else:
+                wn = list(wn)
+        s = [split_name(nm = s)[0] for s in wn]
+        return s
+    
+    wname = list(x.index.values)
+    x.reset_index(0, drop = True, inplace = True)
+    x.insert(0, 'wname', wname)
+    cname = extract_cname(list(x['wname'].values))
+    x.insert(0, 'cname', cname)
+    x = x.set_index("cname")
+    
+    r = pd.DataFrame(data = 'foo',
+        index = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5', 'PC6', 'PC7', 'PC8'], 
+        columns=['wpos1','wpos2','wneg1','wneg2'])
+        
+    orig_x = x.copy()
+    
+    for iPC in range(1,8,2):
+        
+        # start the paired selection with a fresh copy of input PC matrix
+        # sorted by the PCa values
+        PCa = "%s%i" % ('PC', iPC)
+        x = orig_x.sort_values(by = PCa)
+        n = x.shape[0]
+        
+        # most positive windows
+        wpos = list(x.iloc[[n-1, n-2], 0])
+        
+        # drop those contigs
+        cpos = extract_cname(wpos)
+        x = x.drop(cpos)
+        
+        # most negative windows
+        wneg = list(x.iloc[[0, 1], 0])
+        
+        # save pos and neg
+        r.loc[PCa] = [wpos[0], wpos[1], wneg[0], wneg[1]]
+        
+        # drop windows from previously selected contigs
+        cneg = extract_cname(wneg)
+        x = x.drop(cneg)
+        
+        # continue with the reduced PC matrix and next PC 'PCb'
+        PCb = '%s%i' % ('PC', iPC + 1)
+        n = x.shape[0]
+        x = x.sort_values(by = PCb)
+        
+        # most positive windows
+        wpos = list(x.iloc[[n-1, n-2], 0])
+        
+        # drop those contigs
+        cpos = extract_cname(wpos)
+        x = x.drop(cpos)
+        
+        # most negative windows
+        wneg = list(x.iloc[[0, 1], 0])
+        # save those
+        r.loc[PCb] = [wpos[0], wpos[1], wneg[0], wneg[1]]
+        
+    if unpack:
+        r = unpack_select(r)
+        
+    return r
+    
 
 def select_outliers(x, pick = 2):
     '''Select the outliers from the PCA results. 

@@ -109,7 +109,7 @@ def main(filename, outdir, window, step, blast_cmd, db, num_threads,
         columns =['PC%i' % i for i in range(1,tetra['params']['npc']+1)])    
 
     # select and extract outliers
-    tetra['outliers'] = tab.select_outliers(tetra['x'])
+    tetra['outliers'] = tab.select_outliers_pd(tetra['x'])
     outlier_seqs = misc.extract_outliers(tetra['outliers'], tetra['X'])
 
     ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-counts.csv']))
