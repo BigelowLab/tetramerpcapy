@@ -34,11 +34,11 @@ def get_tetramer_range(X):
     @param  X the tetra dist
     @return pandas dataframe with one row per PC and two columns (min and max)
     '''
-    mx = X['x'].max(0)
+    x = X['x'].loc[:, 'PC1':'PC8']
+    mx = x.max(0)
     mx.name = 'max'
-    mn = X['x'].min(0)
-    mn.name = 'min'
-    
+    mn = x.min(0)
+    mn.name = 'min'    
     return pd.concat([mn, mx], axis = 1)
 
 def trim_legend_text(x = 'foo\t bar baz tom petty had\n a pretty good run',
@@ -257,7 +257,7 @@ def plot_tetramer(X, filename = 'example-tetramer.pdf', add_blast = True):
     out = X['outliers'].copy()
     
     x = X['x'].copy()
-    ix = misc.parse_windowname(list(x.index.values))
+    ix = misc.parse_windowname(x['wname'].tolist())
     ix1 = list(ix['name'].values)
     ix2 = list(ix.index.values)
     idx =  zip(ix1,ix2)

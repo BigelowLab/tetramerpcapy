@@ -92,8 +92,7 @@ def main(filename, outdir, window, step, blast_cmd, db, num_threads,
     
     # select and write the fails
     ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-fails.csv']))
-    tetra['df_fails'] = tab.tabulate_fails(N, tetra['X'],
-        filename = ofile)
+    tetra['df_fails'] = tab.tabulate_fails(N, tetra['X'], filename = ofile)
     
     P = PCA(DF)
     tetra['P'] = P
