@@ -60,7 +60,8 @@ def trim_legend_text(x = 'foo\t bar baz tom petty had\n a pretty good run',
     
     return x
 
-def blast_hit_text(x, max_len = 30, no_hit_text = "no significant hits"):
+def blast_hit_text(x, max_len = 30, no_hit_text = "no significant hits",
+    hsp_bit_score_min = 75):
     '''
     Construct strings suitable for drawing
     
@@ -69,14 +70,17 @@ def blast_hit_text(x, max_len = 30, no_hit_text = "no significant hits"):
     
     @param x a dataframe of the blast data
     @param max_len the maximum allowed characters for the second row of text
-    @param no_hit_text substituted text fro when hit_len <= 0
+    @param hsp_bit_score_min minimum Hsp_bit_score for drawing
+    @param no_hit_text substituted text fro when hit_len <= 0 or
+      Hsp_bit_score < hsp_bit_score_min
     @return dict of windowname: text_to_draw, one element per row of input dataframe
     '''
     
     stub = "%0.10s blast score = %0.0f\n%0." + str(max_len) + "s"
+    
     def do_one(x, stub = '%0.10s, hsp-bit-score = %0.0f\n%0.30s'):
         txt = stub % (x['Hit_accession'], float(x['Hsp_bit_score']),x['Hit_def'] )
-        if x['Hit_len'] <= 0:
+        if (x['Hit_len'] <= 0) or (x['Hsp_bit_score'] <  hsp_bit_score_min) :
             txt = no_hit_text
         return txt
     
@@ -218,7 +222,8 @@ def plot_PCvPC(X, iplot = 0, pdf = None, add_blast = True):
       
     if add_blast: 
         # get a dict of the blast text 
-        blast_text = blast_hit_text(X['xblast'])
+        blast_text = blast_hit_text(X['xblast'], 
+           hsp_bit_score_min =  X['params']['hsp_bit_score_min'] )
         y = x.copy()
         y.index = y.index.droplevel('name')
         texts = dict()

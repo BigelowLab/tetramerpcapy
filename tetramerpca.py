@@ -76,6 +76,7 @@ def main(filename, outdir, window, step, blast_cmd, db, num_threads,
     tetra['name']               = misc.get_input_name(filename)
     tetra['params']['window']   = window
     tetra['params']['step']     = step
+    tetra['params']['hsp_bit_score_min'] = 75
     
     fmt = "%s -dd %s -num_threads %s -num_alignments %s -evalue %s"
     tetra['params']['blastcmd']=  fmt % (blast_cmd, db, num_threads, 
