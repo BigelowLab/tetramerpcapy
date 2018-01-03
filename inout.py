@@ -229,12 +229,40 @@ def load_tetramer(path):
     # read in either the actual yaml or default values
     tetra['params'] = read_params(filename = name +'-params.yaml')
     
+    # X = input FASTA
     if os.path.exists(tetra['filename']):
-        tetra['X'] = inout.read_fasta(filename = tetra['filename'])
+        tetra['X'] = read_fasta(filename = tetra['filename'])
     
+    # N = window counts per contig
+    ifile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-window-counts.csv']))
+    if os.path.exists(ifile):
+        tetra['N'] = read_window_counts(filename = ifile)
     
+    # df_fails, skip
     
+    # P output of PCA, skip
     
+    # loadings PCA loadings ('Wt')
+    ifile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-loadings.csv']))
+    if os.path.exists(ifile):
+        tetra['loadings'] = read_loadings(filename = ifile)
+        
+    # DF normalized counts
+    ifile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-counts.csv']))
+    if os.path.exists(ifile):
+        tetra['DF'] = read_normalized_counts(filename = ifile)
+        
+    
+    # x PCs
+    ifile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-tetramer-PC.csv']))
+    if os.path.exists(ifile):
+        tetra['x'] = read_PC(filename = ifile)   
+    
+
+    # xblast
+    ifile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-outliers.tsv']))    
+    if os.path.exists(ifile):
+        tetra['xblast'] = read_blast_table(filename = ifile)
     
     return tetra
     

@@ -93,7 +93,7 @@ def main(filename, outdir, window, step, blast_cmd, db, num_threads,
     tetra['DF'] = DF
     
     ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-window-counts.csv']))
-    write_window_counts(tetra['N'], filename = ofile)
+    inout.write_window_counts(tetra['N'], filename = ofile)
     
     # select and write the fails
     ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-fails.csv']))
