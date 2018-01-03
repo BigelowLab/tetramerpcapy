@@ -211,7 +211,7 @@ def read_blast_table(filename = 'example-outliers.tsv'):
     x = x.set_index('Iteration_query_def', drop = False)
 
     return x
-    
+
     
 def load_tetramer(path):
     '''Read the elements of TetramerPCA outputs into a dict

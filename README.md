@@ -50,7 +50,7 @@ Options:
 
 ```
 
-### What the process does:
+### What the process does
 
  + Generates a matrix of tetramer frequencies (columns) of each contig window (rows), using the window and step sizes. The number of tetramers is 136, reduced from the maximum of 256 to eliminate reverse-complementary tetramers.
   
@@ -75,3 +75,12 @@ Options:
    - blastn output, `name-outliers.xml`
    
    - a listing of failed contigs, `name-failed.csv`
+
+### Loading existing output
+
+For the programmer's convenience existing output from a prior run can be loaded into a dictionary.
+
+```
+import tetramerpca as tet
+tetra = tet.inout.load_tetramer('/path/to/the/exisiting/output/data/set')
+``` 
