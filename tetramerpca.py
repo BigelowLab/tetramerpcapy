@@ -24,7 +24,8 @@ tetra['params'] = {
     'step':     200,
     'width':    4,
     'npc':      8,
-    'pick':     2}
+    'pick':     2,
+    'hsp_bit_score_min': 75}
     
 @click.command(context_settings=dict(help_option_names=['-h', '--help']))
 
@@ -91,6 +92,9 @@ def main(filename, outdir, window, step, blast_cmd, db, num_threads,
     tetra['N'] = N
     tetra['DF'] = DF
     
+    ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-window-counts.csv']))
+    write_window_counts(tetra['N'], filename = ofile)
+    
     # select and write the fails
     ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-fails.csv']))
     tetra['df_fails'] = tab.tabulate_fails(N, tetra['X'], filename = ofile)
@@ -113,20 +117,16 @@ def main(filename, outdir, window, step, blast_cmd, db, num_threads,
     outlier_seqs = misc.extract_outliers(tetra['outliers'], tetra['X'])
 
     ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-counts.csv']))
-    ok = inout.write_normalized_counts(tetra['DF'], 
-        filename = ofile)
+    ok = inout.write_normalized_counts(tetra['DF'], filename = ofile)
     
     ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-loadings.csv']))
-    ok = inout.write_loadings(tetra['loadings'], 
-        filename = ofile)
+    ok = inout.write_loadings(tetra['loadings'], filename = ofile)
     
     ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-tetramer-PC.csv']))
-    ok = inout.write_PC(tetra['x'], 
-        filename = ofile)
+    ok = inout.write_PC(tetra['x'], filename = ofile)
     
     ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-outliers.fasta']))
-    ok = inout.write_fasta(outlier_seqs,
-        filename = ofile)
+    ok = inout.write_fasta(outlier_seqs, filename = ofile)
     
     ifile = ofile
     ofile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-outliers.xml']))
