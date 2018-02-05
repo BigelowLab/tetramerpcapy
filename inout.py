@@ -295,7 +295,7 @@ def load_tetramer(path):
     #    tetra['P'] = read_PCA(filename = ifile)
 
     # fracs dict from drawing
-    file = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-Pfracs.pickle']))
+    ifile = os.path.join(tetra['outdir'], ''.join([tetra['name'], '-fracs.pickle']))
     if os.path.exists(ifile):
         tetra['fracs'] = read_fracs(filename = ifile)
 
