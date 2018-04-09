@@ -96,15 +96,26 @@ def extract_outliers(x, X):
     X = dict(zip(XID, X))
     
     ss = list()
-    for contig in list(x.index.values):
-        #one or more contigs may be involved
-        wn = x.loc[contig,'name']
-        #if isinstance(wn, str):
-        #    wn = [wn]
-        #else:
-        #    wn = list(wn)
-        nav = parse_windowname(wn)
-        ss = ss + [extract_seq(X[contig], row) for index, row in nav.iterrows()] 
+    #for contig in list(x.index.values):
+    #    #one or more contigs may be involved
+    #    wn = x.loc[contig,'name']
+    #    #if isinstance(wn, str):
+    #    #    wn = [wn]
+    #    #else:
+    #    #    wn = list(wn)
+    #    nav = parse_windowname(wn)
+    #    ss = ss + [extract_seq(X[contig], row) for index, row in nav.iterrows()] 
+    
+    # the above doesn't iterate over rows, but over row names which is muddles
+    # the loops, instead we iterate using iterrows
+    # with returns an iteration count and a <something> whic contains the data
+    # in the row
+    # because of the way I established extract_seq it expects a row of a
+    # dataframe so we user iterrows a second time for a 1-row dataframe.  
+    # Could be better.
+    for i,r in x.iterrows():
+        nav = parse_windowname(r['name'])
+        ss = ss + [extract_seq(X[nav['name'][0]], row) for index, row in nav.iterrows()]
         
     return ss
 
