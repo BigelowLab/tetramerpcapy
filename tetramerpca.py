@@ -17,7 +17,6 @@ import blast
 import draw
 
 tetra = dict()
-
 tetra['params'] = {
     'blastcmd': 'blastn -db nr -num_threads 12 -num_alignments 10 -evalue 10',
     'window':   1600,
@@ -65,9 +64,14 @@ tetra['params'] = {
               default='10',
               help='blast option passed through, default is 10')
 
+@click.option('--nplots',
+              default=1,
+              type=click.IntRange(0, 4, clamp=False),
+              help='number of PC pairs to plot, options are 0-4 with default is 1 for PC1 v PC2')
+
 
 def main(filename, outdir, window, step, blast_cmd, db, num_threads,
-    num_alignments, evalue, tetra = tetra):
+    num_alignments, evalue, nplots, tetra = tetra):
 
     if outdir is None:
         outdir = os.path.dirname(filename)
@@ -75,6 +79,7 @@ def main(filename, outdir, window, step, blast_cmd, db, num_threads,
     tetra['filename']           = filename
     tetra['outdir']             = outdir
     tetra['name']               = misc.get_input_name(filename)
+    tetra['nplots']             = nplots
     tetra['params']['window']   = window
     tetra['params']['step']     = step
     tetra['params']['hsp_bit_score_min'] = 75

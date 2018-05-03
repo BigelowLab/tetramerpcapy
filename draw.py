@@ -253,16 +253,22 @@ def plot_tetramer(X, filename = 'example-tetramer.pdf', add_blast = True):
     @seealso http://matplotlib.org/1.5.1/faq/howto_faq.html#save-multiple-plots-to-one-pdf-file
     @seealso http://matplotlib.org/examples/pylab_examples/multipage_pdf.html
 
-    @param X        dict of tetramer analysis results
-    @param out_file name of the output PDF file
+    @param X          dict of tetramer analysis results
+    @param out_file   name of the output PDF file
+    @param add_blast  boolean to add blast annotations
+    @param nplots     integer number of plots (1 to 4)
     '''
 
+    nplots = X['nplots']
+    if nplots == 0:
+        return None
+    assert nplots >= 1 and nplots <= 4, "nplots must be 1 to 4: %i" % nplots
 
 
     lim = get_tetramer_range(X)
     # make an array ala [PC1, PC2], [PC3, PC4], ...
     nmpc = lim.index.values.reshape(X['params']['npc']/2,2)
-    nplots = nmpc.shape[0]
+    #nplots = nmpc.shape[0]
 
     out = X['outliers'].copy()
 
@@ -288,5 +294,5 @@ def plot_tetramer(X, filename = 'example-tetramer.pdf', add_blast = True):
 
     with PdfPages(filename) as pdf:
 
-        for iplot in range(0, 4):
+        for iplot in range(0, nplots):
             plot_PCvPC(X, iplot = iplot, pdf = pdf, add_blast = add_blast)
