@@ -25,35 +25,35 @@ def get_range(y, col = 'PC1'):
 
     imin = y.loc[:,col].idxmin()
     imax = y.loc[:,col].idxmax()
-    r = pd.DataFrame({'min_name':  imin, 
-                      'min_value': y.loc[imin,col], 
-                      'max_name':  imax, 
+    r = pd.DataFrame({'min_name':  imin,
+                      'min_value': y.loc[imin,col],
+                      'max_name':  imax,
                       'max_value': y.loc[imax,col]},
                       index = [imin.rsplit("_",1)[0]] )
     return r
 
 def select_outliers_pd(x, unpack = True):
     '''
-    Selects 'outliers' from a [nwindow x nPC] dataframe.  
-    Selection of outliers occurs in PCa vs PCb (e.g. PC1 v PC2, PC3 v PC4, ...) 
-    pairs.  Here is pseudocode that operates on input_df dataframe 
-    
+    Selects 'outliers' from a [nwindow x nPC] dataframe.
+    Selection of outliers occurs in PCa vs PCb (e.g. PC1 v PC2, PC3 v PC4, ...)
+    pairs.  Here is pseudocode that operates on input_df dataframe
+
     for each PCa vs PCb pairing do:
-      
+
       df = input_df.copy()
-      
+
       sort df on PCa
       select most positive windows (PCa's wpos1 and wpos2)
       remove from df all windows that come from wpos1 and wpos2 contigs
       select most negative windows (PCa's wneg1 and wneg2)
       remove from df all windows that come from wneg1 and wneg2 contigs
-    
+
       sort df on PCb
       select most positive windows (PCb's wpos1 and wpos2)
       remove from df all windows that come from wpos1 and wpos2 contigs
       select most negative windows (PCb's wneg1 and wneg2)
-    
-    
+
+
     @param x dataframe [nwindows x nPC], indexed by windowname (wname)
     @param unpack boolean, if True reshape to match the tetramerpca workflow
     @return dataframe depending upon unpack value
@@ -64,9 +64,9 @@ def select_outliers_pd(x, unpack = True):
     '''
     def unpack_select(x):
         '''
-        Given the dense outlier selection data frame, make the long form used by 
+        Given the dense outlier selection data frame, make the long form used by
         tetramerpca.
-        
+
         @param x a data frame indexed by PC wih 4 columns wpos1, wpos2, wneg1 and wneg2
         @return a data frame indexed by contig name with columns name (wname), typ,
             and PC
@@ -80,19 +80,19 @@ def select_outliers_pd(x, unpack = True):
         x['cname'] = extract_cname(list(x['name'].values))
         x = x.set_index('cname')
         return x
-    
+
     def split_name(nm = 'foo_a_b_1-500'):
-        ''' Split the input into 4 parts 
-        
+        ''' Split the input into 4 parts
+
         [name (foo_a_b), window (1-500), start (1) end (500)]
-        
+
         @param nm the string to split
-        @return a four element list 
+        @return a four element list
         '''
         a = string.rsplit(nm, "_", 1)
         b = string.split(a[1], "-")
-        return a + [int(v) - 1 for v in b] 
-    
+        return a + [int(v) - 1 for v in b]
+
     def extract_cname(wn = ["A_1-1600","B_201-1800"]):
         if not isinstance(wn, list):
             if isinstance(wn, str):
@@ -101,77 +101,75 @@ def select_outliers_pd(x, unpack = True):
                 wn = list(wn)
         s = [split_name(nm = s)[0] for s in wn]
         return s
-    
-    wname = list(x.index.values)
-    x.reset_index(0, drop = True, inplace = True)
-    x.insert(0, 'wname', wname)
-    cname = extract_cname(list(x['wname'].values))
-    x.insert(0, 'cname', cname)
-    x = x.set_index("cname")
-    
-    r = pd.DataFrame(data = 'foo',
-        index = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5', 'PC6', 'PC7', 'PC8'], 
-        columns=['wpos1','wpos2','wneg1','wneg2'])
-        
+
     orig_x = x.copy()
-    
+    wname = list(orig_x.index.values)
+    orig_x.reset_index(0, drop = True, inplace = True)
+    orig_x.insert(0, 'wname', wname)
+    cname = extract_cname(wname) # extract_cname(list(x['wname'].values))
+    orig_x.insert(0, 'cname', cname)
+    orig_x = orig_x.set_index("cname")
+    r = pd.DataFrame(data = 'foo',
+        index = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5', 'PC6', 'PC7', 'PC8'],
+        columns=['wpos1','wpos2','wneg1','wneg2'])
+
     for iPC in range(1,8,2):
-        
+
         # start the paired selection with a fresh copy of input PC matrix
         # sorted by the PCa values
         PCa = "%s%i" % ('PC', iPC)
-        x = orig_x.sort_values(by = PCa)
-        n = x.shape[0]
-        
-        # most positive windows
-        wpos = list(x.iloc[[n-1, n-2], 0])
-        
-        # drop those contigs
-        cpos = extract_cname(wpos)
-        x = x.drop(cpos)
-        
-        # most negative windows
-        wneg = list(x.iloc[[0, 1], 0])
-        
-        # save pos and neg
-        r.loc[PCa] = [wpos[0], wpos[1], wneg[0], wneg[1]]
-        
-        # drop windows from previously selected contigs
-        cneg = extract_cname(wneg)
-        x = x.drop(cneg)
-        
-        # continue with the reduced PC matrix and next PC 'PCb'
         PCb = '%s%i' % ('PC', iPC + 1)
-        n = x.shape[0]
-        x = x.sort_values(by = PCb)
-        
-        # most positive windows
-        wpos = list(x.iloc[[n-1, n-2], 0])
-        
-        # drop those contigs
-        cpos = extract_cname(wpos)
-        x = x.drop(cpos)
-        
-        # most negative windows
-        wneg = list(x.iloc[[0, 1], 0])
-        # save those
-        r.loc[PCb] = [wpos[0], wpos[1], wneg[0], wneg[1]]
-        
+
+        x       = orig_x.copy().sort_values(by = PCa)
+        n       = x.shape[0]
+        whi     = x.iloc[n-1, 0]                    # first place positive
+        chi     = extract_cname(whi)[0]
+        x       = x.drop(chi)                      # remove contigs
+        n       = x.shape[0]
+        whi     = [whi, x.iloc[n-1, 0]]             # [first,second] place positive
+        chi     = extract_cname(whi)
+        x       = x.drop(chi)                       # remove contigs
+        wlo     = x.iloc[0, 0]                      # first place negative
+        clo     = extract_cname(wlo)[0]
+        x       = x.drop(clo)                       # remove contigs
+        wlo     = [wlo, x.iloc[0, 0]]               # [first, second] place negative
+
+        # save [most pos, pos, neg, most neg]
+        r.loc[PCa] = [whi[0], whi[1], wlo[1], wlo[0]]
+
+        x       = x.drop(extract_cname(wlo))        # remove contigs
+        x       = x.sort_values(by = PCb)           # second PC
+        n       = x.shape[0]
+        whi     = x.iloc[n-1, 0]                    # first place positive
+        chi     = extract_cname(whi)
+        x       = x.drop(chi)                       # remove contigs
+        n       = x.shape[0]
+        whi     = [whi, x.iloc[n-1, 0]]             # [first,second] place positive
+        chi     = extract_cname(whi)
+        x       = x.drop(chi)                       # remove contigs
+        wlo     = x.iloc[0, 0]
+        clo     = extract_cname(wlo)[0]
+        x       = x.drop(clo)                       # remove contigs
+        wlo     = [wlo, x.iloc[0, 0]]               # [first, second] place negative
+
+        # save those  [most pos, pos, neg, most neg]
+        r.loc[PCb] = [whi[0], whi[1], wlo[1], wlo[0]]
+
     if unpack:
         r = unpack_select(r)
-        
+
     return r
-    
+
 
 def select_outliers(x, pick = 2):
-    '''Select the outliers from the PCA results. 
+    '''Select the outliers from the PCA results.
 
-    This is a complex arrangement of simple steps to identify the 'extreme' 
+    This is a complex arrangement of simple steps to identify the 'extreme'
     response windows within a set of contigs in each PC direction. Extreme means
-    here most positive ('hi') and most negative ('lo') windows. Selection 
+    here most positive ('hi') and most negative ('lo') windows. Selection
     is done in pairs of PC's (PC1 + PC2, PC3 + PC4, ...).  Within each pairing
     the selection set is winnowed to prevent the selection of a given contig
-    more than once - the idea being to expand the pool of blast candidates. 
+    more than once - the idea being to expand the pool of blast candidates.
 
     @param x    a dataframe of PC1, PC2, ..., PC8 indexed by window name
     @param pick the number of extreme candidates to select.
@@ -200,7 +198,7 @@ def select_outliers(x, pick = 2):
         hi1_contig['PC']  = [pcname] * pick
         hi1_contig.columns = ['name', 'typ', 'PC']
 
-        # now exclude those selected above and 
+        # now exclude those selected above and
         # select the two most negative hits
         r = r.drop(list(hi1_contig.index))
         r = r.sort_values('min_value', ascending = True)
@@ -211,7 +209,7 @@ def select_outliers(x, pick = 2):
 
         R1 = pd.concat([hi1_contig, lo1_contig])
 
-        # now we do the next PC - note we do this is pairs so that we keep 
+        # now we do the next PC - note we do this is pairs so that we keep
         # trimming the selection between PC1 -> PC2, then we start with the
         # fullset for PC3 -> PC4.  I can't recall why we do this but it must have
         # been important.
@@ -230,7 +228,7 @@ def select_outliers(x, pick = 2):
         hi2_contig['PC']  = [pcname] * pick
         hi2_contig.columns = ['name', 'typ', 'PC']
 
-        # now exclude those selected above and 
+        # now exclude those selected above and
         # select the two most negative hits
         r = r.drop(list(hi2_contig.index))
         r = r.sort_values('min_value', ascending = True)
@@ -239,7 +237,7 @@ def select_outliers(x, pick = 2):
         lo2_contig['PC']  = [pcname] * pick
         lo2_contig.columns = ['name', 'typ', 'PC']
 
-        R2 = pd.concat([hi2_contig, lo2_contig])        
+        R2 = pd.concat([hi2_contig, lo2_contig])
 
         R.append(pd.concat([R1,R2]))
 
@@ -267,8 +265,8 @@ def tabulate_fails(N, X, filename = None):
             z.append([ status,len(x), SeqUtils.GC(x.seq) / 100])
             nm.append(x.id)
 
-    df = pd.DataFrame(z, 
-        columns = ['status', 'contigLength', 'pGC'], 
+    df = pd.DataFrame(z,
+        columns = ['status', 'contigLength', 'pGC'],
         index = nm)
 
     if filename is not None:
@@ -295,15 +293,15 @@ def get_dictnames(dct = lut.get_utetramers(), sort_it = 'ascending'):
 
 
 
-def tabulate_kmers(v = ['GGTT', 'GTTA', 'TTAC', 'TACA', 'ACAN', 'CANN', 'ANNN'], 
+def tabulate_kmers(v = ['GGTT', 'GTTA', 'TTAC', 'TACA', 'ACAN', 'CANN', 'ANNN'],
         kmers = get_dictnames()):
     '''Tabulate the kmers in v by the elements in kmers
 
     @params v       list of items that will be counted
-    @parmas kmers   list of items to count 
+    @parmas kmers   list of items to count
     @return         list of counts - in the order of kmers
     '''
-    x = [v.count(kmers[i]) for i in xrange(len(kmers)) ] 
+    x = [v.count(kmers[i]) for i in xrange(len(kmers)) ]
 
     return x
 
@@ -358,7 +356,7 @@ def tabulate_seq(x, window = 1600, step = 200, width = 4):
             s = str(x[s1[0]:s1[nstarts-1] + width + 1].seq)
             df.ix[istep] = tabulate_kmers(extract_kmers(s), kmers = tetnm)
 
-        df.index = rownames 
+        df.index = rownames
     else:
         df = None;
 
@@ -379,7 +377,7 @@ def tabulate_seqs(X, window = 1600, step = 200, width = 4):
     return dfs
 
 def reduce_tetramers(x):
-    
+
     comp = lut.get_rcomp_tetramers()
     keep = lut.get_keep_tetramers()
 
@@ -396,7 +394,7 @@ def normalize_tetramers(x):
     ''' Transform a dataframe of counts to normalized (0-1) counts.
 
     Rows that are everywhere 0 (i.e. no teteramers found) are set to zero everywhere
-    
+
     @param x    pandas dataframe of tetramer counts
     @return     pandas dataframe of same shape with normalize counts
     '''
@@ -411,11 +409,11 @@ def normalize_tetramers(x):
 def tabulate_tetramers(X, window = 1600, step = 200, width = 4):
     '''Tabulate contigs in a Bio.SeqRecord
 
-    Returns a tuple of 
+    Returns a tuple of
         (1) counts of windows by contig (even failed ones which will be 0)
         (2) dataframe of tetramer counts by tetramer (cols) and windows (rows)
 
-    @param X        
+    @param X
     @param window   the width of the sliding window in characters
     @param step     the number of characters to advance the window each iteration
     @param width    the width of the kmers to tally

@@ -273,7 +273,8 @@ def plot_tetramer(X, filename = 'example-tetramer.pdf', add_blast = True):
     out = X['outliers'].copy()
 
     x = X['x'].copy()
-    ix = misc.parse_windowname(x['wname'].tolist())
+    #ix = misc.parse_windowname(x['wname'].tolist())
+    ix = misc.parse_windowname(x.index.values)
     ix1 = list(ix['name'].values)
     ix2 = list(ix.index.values)
     idx =  zip(ix1,ix2)
