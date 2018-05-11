@@ -7,8 +7,54 @@ import re
 import misc
 import datetime
 from adjustText import adjust_text
+import math
+
+def select_hits(x, col = "Hit_len", which = 'first'):
+    '''
+    Given a blast results dataframe indexed by window name, select the
+    'best' blast hit (a row) for each window.  The caller specifies the column name and
+    sort order to define what 'best' means
+
+    @param x a dataframe of blast results
+    @param col string, the name of the column upon which to base the selection, default to 'Hit_len'
+    @param order string, one of 'max', 'min' or 'first'
+        'max' returns the hit with highest value
+        'min' selects the hit with the lowest value
+        'first' simple select the first row without sorting
+    @return dataframe with one row per group
+    '''
+    
+    def selector(x, col = 'Hit_len', ascending = False):
+        if isinstance(x, pd.core.series.Series):
+            return x
+        if ascending is not None:
+            row = x.sort_values(col, ascending = ascending).iloc[0,]
+        else:
+            row = x.iloc[0]
+        return row
+
+    # ascending 
+    #    True  if 'min'
+    #    False if 'max'
+    #    None  if 'first'    
+    if which == 'first':
+        ascending = None
+    else:
+        ascending = which == 'min'
 
 
+    # get the unique index values
+    # iterate and build up a list
+    grps = list(set(list(x.index.values)))
+    xx = list()
+    for index in grps:
+        xx.append(selector(x.loc[index], col = col, ascending = ascending))
+    
+    # row bind
+    xx = pd.DataFrame(xx)
+    
+    return xx
+    
 def get_explanation(X):
     '''
     Retrieve the normalized 'explanation' of variance for each PC as eigenvalues
@@ -64,7 +110,8 @@ def trim_legend_text(x = 'foo\t bar baz tom petty had\n a pretty good run',
 
     return x
 
-def blast_hit_text(x, max_len = 30, no_hit_text = "no significant hits",
+def blast_hit_text(x, max_len = 30, 
+    no_hit_text = "no significant hits",
     hsp_bit_score_min = 75):
     '''
     Construct strings suitable for drawing
@@ -84,7 +131,7 @@ def blast_hit_text(x, max_len = 30, no_hit_text = "no significant hits",
 
     def do_one(x, stub = '%0.10s, hsp-bit-score = %0.0f\n%0.30s'):
         txt = stub % (x['Hit_accession'], float(x['Hsp_bit_score']),x['Hit_def'] )
-        if (x['Hit_len'] <= 0) or (x['Hsp_bit_score'] <  hsp_bit_score_min) :
+        if math.isnan(x['Hit_len']) or (x['Hit_len'] <= 0) or (x['Hsp_bit_score'] <  hsp_bit_score_min) :
             txt = no_hit_text
         return txt
 
@@ -226,11 +273,19 @@ def plot_PCvPC(X, iplot = 0, pdf = None, add_blast = True):
 
 
     if add_blast:
-        # get a dict of the blast text
-        blast_text = blast_hit_text(X['xblast'],
+        
+        out = X['outliers'].copy()
+        o = out[(out['PC'] == px) | (out['PC'] == py)].copy()
+        onm = list(o['name'].values)
+        # these are the coordinates of where to draw the annotations
+        pc  = x.copy().reset_index(level = 'name').loc[onm]
+        # these are the annotations to draw
+        hits = select_hits(X['xblast'].copy().loc[onm])
+        blast_text = blast_hit_text(hits,
            hsp_bit_score_min =  X['params']['hsp_bit_score_min'] )
         y = x.copy()
         y.index = y.index.droplevel('name')
+        
         texts = dict()
         for k in blast_text.keys():
             ha = 'left' if y.loc[k,px] > 0 else 'right'
@@ -238,10 +293,12 @@ def plot_PCvPC(X, iplot = 0, pdf = None, add_blast = True):
                 color = colors['blue'], size = 'xx-small',
                 horizontalalignment = ha)
             texts[k] = txt
+            
         adjust_text(texts.values(),
             arrowprops=dict(arrowstyle="-", color='black', lw=0.5))
 
-    pdf.savefig()
+    if pdf is not None:
+        pdf.savefig()
     plt.close()
     return None
 
