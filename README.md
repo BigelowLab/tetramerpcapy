@@ -3,7 +3,7 @@
 TeteramPCA detects outlier regions in genomes in terms of tetramer composition, which are indicative of either contamination or gene transfer.  Tertamers are
 tabulated using an overlapping sliding window. The user specifies both the width of the window and the steps the window is advanced for each tabulation.
 
-This package is adapted from work originally done in perl-language by Alexander Sczyrba at [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).
+This package is adapted from work originally done in perl-language by Alexander Sczyrba at [Bielefeld University Center for Biotechnology](http://www.cebitec.uni-bielefeld.de/~asczyrba) and formerly at [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).
 
 ### Requirements:
 
