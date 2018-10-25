@@ -283,7 +283,9 @@ def get_dictnames(dct = lut.get_utetramers(), sort_it = 'ascending'):
     @return         list of possibly sorted keys
     '''
 
-    k = dct.keys()
+    # k = dct.keys()
+    # https://stackoverflow.com/questions/22845330/attribute-error-in-python-wont-go-away#22845343
+    k = list(dct.keys())
     if sort_it == 'ascending':
         k.sort()
     elif sort_it == 'descending':
