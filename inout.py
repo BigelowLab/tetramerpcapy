@@ -17,8 +17,8 @@ def is_gzipped(filename = 'example.fasta.gz'):
     '''
     try:
         file_handle = open(filename,"rb")
-    except IOerror, e:
-        print 'error opening file:', e
+    except IOerror as e:
+        print('error opening file:', e)
 
     x1 = file_handle.read(1)
     x2 = file_handle.read(1)
@@ -71,7 +71,7 @@ def read_fasta(filename = 'example.fasta.gz'):
     contigs = list()
 
     if not os.path.isfile(filename):
-        print 'file not found:', filename
+        print('file not found:', filename)
         return contigs
 
     if is_gzipped(filename):
