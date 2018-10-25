@@ -21,6 +21,7 @@ setup(
     version = get_version('tetramerpca.py'),
     author = "Ben Tupper",
     author_email = "btupper@bigelow.org",
+    url = "https://github.com/BigelowLab/tetramerpcapy",
     description = ("Tetramer analysis with PCA"),
     py_modules=[
         'tetramerpca',
