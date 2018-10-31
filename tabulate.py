@@ -89,8 +89,10 @@ def select_outliers_pd(x, unpack = True):
         @param nm the string to split
         @return a four element list
         '''
-        a = string.rsplit(nm, "_", 1)
-        b = string.split(a[1], "-")
+        #a = string.rsplit(nm, "_", 1)
+        a = nm.rsplit("_", 1)
+        #b = string.split(a[1], "-")
+        b = a[1].split("-")
         return a + [int(v) - 1 for v in b]
 
     def extract_cname(wn = ["A_1-1600","B_201-1800"]):
@@ -113,7 +115,7 @@ def select_outliers_pd(x, unpack = True):
         index = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5', 'PC6', 'PC7', 'PC8'],
         columns=['wpos1','wpos2','wneg1','wneg2'])
 
-    for iPC in range(1,8,2):
+    for iPC in list(range(1,8,2)):
 
         # start the paired selection with a fresh copy of input PC matrix
         # sorted by the PCa values
@@ -180,12 +182,12 @@ def select_outliers(x, pick = 2):
     nm = misc.parse_windowname(list(x.index.values))
 
     xx = dict(list(x.groupby(nm['name'])))
-    pick_hi_idx = range(0, pick)
+    pick_hi_idx = list(range(0, pick))
     pick_lo_idx = pick_hi_idx[::-1]
     hi_names = ['hi'] * pick
     lo_names = ['lo'] * pick
     R = list()
-    for i in range(0, len(nmpc),2):
+    for i in list(range(0, len(nmpc),2)):
         pcname = nmpc[i]
         keys = xx.keys()
         # this provides an contigname-indexed dataframe
@@ -303,7 +305,7 @@ def tabulate_kmers(v = ['GGTT', 'GTTA', 'TTAC', 'TACA', 'ACAN', 'CANN', 'ANNN'],
     @parmas kmers   list of items to count
     @return         list of counts - in the order of kmers
     '''
-    x = [v.count(kmers[i]) for i in xrange(len(kmers)) ]
+    x = [v.count(kmers[i]) for i in list(range(len(kmers))) ]
 
     return x
 
@@ -320,7 +322,7 @@ def extract_kmers(x = 'AATTTTTTTCGTTCTGCGGAACCACCAAAACCAGTC', k = 4 , step = 1):
     @return     list of kmers
     '''
 
-    kmers = [x[i:i+k] for i in xrange(0, len(x) - k + 1, step)]
+    kmers = [x[i:i+k] for i in list(range(0, len(x) - k + 1, step))]
 
     return kmers
 
@@ -347,7 +349,7 @@ def tabulate_seq(x, window = 1600, step = 200, width = 4):
     nx = len(x)
 
     if nx >= window:
-        nsteps = ( ( nx - window ) / step ) + 1
+        nsteps = int(( ( nx - window ) / step ) + 1)
         df = pd.DataFrame(0, index = np.arange(nsteps), columns = tetnm)
         rownames = [' ']*nsteps
 

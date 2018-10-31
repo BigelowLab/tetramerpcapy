@@ -39,8 +39,10 @@ def split_name(nm = 'foo_a_b_1-500'):
     @param nm the string to split
     @return a four element list 
     '''
-    a = string.rsplit(nm, "_", 1)
-    b = string.split(a[1], "-")
+    # a = string.rsplit(nm, "_", 1)
+    # b = string.split(a[1], "-")
+    a = nm.rsplit("_", 1)
+    b = a[1].split("-")
     return a + [int(v) - 1 for v in b]  
 
 def parse_windowname(wn = ['foo_a_b_1-500', 'foo_a_b_501-1000']):

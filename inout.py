@@ -104,7 +104,7 @@ def write_window_counts(x, filename = 'example-window-counts.csv'):
     @return     whatever is returned by pandas dataframe.to_csv()
     '''
 
-    x = pd.DataFrame(x.items())
+    x = pd.DataFrame(list(x.items()))
     x.columns = ['cname', 'wcount']
     return x.to_csv(filename)
 
