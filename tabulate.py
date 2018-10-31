@@ -336,7 +336,7 @@ def tabulate_seq(x, window = 1600, step = 200, width = 4):
 
     DNALETTERS = lut.get_dnaletters()
     UTETRAMERS = lut.get_utetramers()
-    tetnm = UTETRAMERS.keys()
+    tetnm = list(UTETRAMERS.keys())
     tetnm.sort()
 
     # sequential start locations - note that we want a np.ndarray
