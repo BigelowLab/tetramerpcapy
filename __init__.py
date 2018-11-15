@@ -2,6 +2,7 @@ from .misc import (get_input_name, create_empty_dataframe, split_name,
     parse_windowname, extract_outliers)
 
 from .tabulate import (get_range, select_outliers_pd, select_outliers,
+    select_outliers_pd_permissive,
     tabulate_fails, get_dictnames, tabulate_kmers, extract_kmers, 
     tabulate_seq, tabulate_seqs, reduce_tetramers, normalize_tetramers,
     tabulate_tetramers)
