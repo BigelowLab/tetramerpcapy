@@ -32,7 +32,111 @@ def get_range(y, col = 'PC1'):
                       index = [imin.rsplit("_",1)[0]] )
     return r
 
-def select_outliers_pd(x, unpack = True):
+
+def select_outliers_pd_permissive(x, unpack = True):
+    '''
+    Selects 'outliers' from a [nwindow x nPC] dataframe using permissive reductions
+    
+    index the input with cn (contigname) and wn (windowname)
+
+    for each PC do:
+
+      # extract the column PC and sort
+      # select the two most positive (wpos)
+      # filter out matching contigs
+      # if remaining is < 2 rows then add the wpos contigs back in
+      # select the two most negative (wneg)
+
+      pc = x.loc[:, PC].copy().sort_values(inplace = True)
+      idx = m.index.values
+      n = len(idx)
+      wpos = [x[1] for x in idx[(n-2):]]
+
+      
+
+    @param x dataframe [nwindows x nPC], indexed by windowname (wname)
+    @param unpack boolean, if True reshape to match the tetramerpca workflow
+    @return dataframe depending upon unpack value
+      unpack = False, indexed by PC with 4 columns wpos1,wpos2, wneg1, wneg2 where
+        the columns are the window names ala "contigname_start-stop"
+      unpack = True, indexed by contigname (cname) with 3 columns typ (hi/lo),
+        PC (PC1, PC2, ...) and name (wname)
+    '''
+    def unpack_select(x):
+        '''
+        Given the dense outlier selection data frame, make the long form used by
+        tetramerpca.
+
+        @param x a data frame indexed by PC wih 4 columns wpos1, wpos2, wneg1 and wneg2
+        @return a data frame indexed by contig name with columns name (wname), typ,
+            and PC
+        '''
+        x = x.unstack().reset_index()
+        x = x.replace("wpos1", "hi")
+        x = x.replace("wpos2", "hi")
+        x = x.replace("wneg1", "lo")
+        x = x.replace("wneg2", "lo")
+        x.columns = ['typ', 'PC', 'name']
+        x['cname'] = extract_cname(list(x['name'].values))
+        x = x.set_index('cname')
+        return x
+
+    def split_name(nm = 'foo_a_b_1-500'):
+        ''' Split the input into 4 parts
+
+        [name (foo_a_b), window (1-500), start (1) end (500)]
+
+        @param nm the string to split
+        @return a four element list
+        '''
+        #a = string.rsplit(nm, "_", 1)
+        a = nm.rsplit("_", 1)
+        #b = string.split(a[1], "-")
+        b = a[1].split("-")
+        return a + [int(v) - 1 for v in b]
+
+    def extract_cname(wn = ["A_1-1600","B_201-1800"]):
+        if not isinstance(wn, list):
+            if isinstance(wn, str):
+                wn = [wn]
+            else:
+                wn = list(wn)
+        s = [split_name(nm = s)[0] for s in wn]
+        return s
+
+
+    wname = list(orig_x.index.values)
+    cname = extract_cname(wname)
+    x.set_index([cn, wn])
+
+    r = pd.DataFrame(data = 'foo',
+        index = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5', 'PC6', 'PC7', 'PC8'],
+        columns=['wpos1','wpos2','wneg1','wneg2'])
+
+    for PC in x.columns.values.tolist():
+        pc = x.loc[:, PC].copy()
+        pc.sort_values(inplace = True)
+        ipos = pc.tail(2).index.values
+        wpos = [x[1] for x in ipos]
+        cpos = [x[0] for x in ipos]
+        r.at[PC, 'wpos1'] = wpos[1]
+        r.at[PC, 'wpos2'] = wpos[0]
+        z = pc.drop(cpos)
+        if z.shape[0] < 2:
+           z = pc
+        ineg = z.head(2).index.values
+        wneg = [x[1] for x in ineg]
+        r.at[PC, 'wneg1'] = wneg[0]
+        r.at[PC, 'wneg2'] = wneg[1]
+        
+
+    if unpack:
+        r = unpack_select(r)
+
+    return r
+
+
+def select_outliers_pd(x, unpack = True, permissive = True):
     '''
     Selects 'outliers' from a [nwindow x nPC] dataframe.
     Selection of outliers occurs in PCa vs PCb (e.g. PC1 v PC2, PC3 v PC4, ...)
@@ -56,12 +160,18 @@ def select_outliers_pd(x, unpack = True):
 
     @param x dataframe [nwindows x nPC], indexed by windowname (wname)
     @param unpack boolean, if True reshape to match the tetramerpca workflow
+    @param permissive boolean, if True then use permissive filtering
     @return dataframe depending upon unpack value
       unpack = False, indexed by PC with 4 columns wpos1,wpos2, wneg1, wneg2 where
         the columns are the window names ala "contigname_start-stop"
       unpack = True, indexed by contigname (cname) with 3 columns typ (hi/lo),
         PC (PC1, PC2, ...) and name (wname)
     '''
+
+    if permissive:
+        return(select_outliers_pd_permissive(x, unpack = unpack))
+
+
     def unpack_select(x):
         '''
         Given the dense outlier selection data frame, make the long form used by
