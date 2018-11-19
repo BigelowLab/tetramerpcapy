@@ -11,6 +11,7 @@ from Bio import Seq
 from Bio import SeqRecord
 from Bio import SeqUtils
 from collections import OrderedDict
+from collections import Counter
 
 
 def get_range(y, col = 'PC1'):
@@ -108,6 +109,7 @@ def select_outliers_pd_permissive(x, unpack = True):
     wname = list(x.index.values)
     cname = extract_cname(wname)
     x.set_index([cname, wname], inplace = True)
+    x.index.set_names(['cn', 'wn'], inplace = TRUE)
 
     r = pd.DataFrame(data = 'foo',
         index = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5', 'PC6', 'PC7', 'PC8'],
@@ -115,17 +117,16 @@ def select_outliers_pd_permissive(x, unpack = True):
 
     for PC in x.columns.values.tolist():
         pc = x.loc[:, PC].copy()
-        #pc.set_index([cname, wname])
         pc.sort_values(inplace = True)
         ipos = pc.tail(2).index.values
         wpos = [x[1] for x in ipos]
         cpos = [x[0] for x in ipos]
         r.at[PC, 'wpos1'] = wpos[1]
         r.at[PC, 'wpos2'] = wpos[0]
-        z = pc.drop(cpos, errors = 'ignore')
-        if z.shape[0] < 2:
-           z = pc
-        ineg = z.head(2).index.values
+        n = Counter(~pc.index.isin(cpos, level = 'cn'))
+        if n[True] >= 2:
+            pc.drop(cpos, level = 'cn', inplace = True)
+        ineg = pc.head(2).index.values
         wneg = [x[1] for x in ineg]
         r.at[PC, 'wneg1'] = wneg[0]
         r.at[PC, 'wneg2'] = wneg[1]
