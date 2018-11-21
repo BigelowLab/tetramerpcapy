@@ -109,7 +109,7 @@ def select_outliers_pd_permissive(x, unpack = True):
     wname = list(x.index.values)
     cname = extract_cname(wname)
     x.set_index([cname, wname], inplace = True)
-    x.index.set_names(['cn', 'wn'], inplace = TRUE)
+    x.index.set_names(['cname', 'wname'], inplace = True)
 
     r = pd.DataFrame(data = 'foo',
         index = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5', 'PC6', 'PC7', 'PC8'],
@@ -125,14 +125,14 @@ def select_outliers_pd_permissive(x, unpack = True):
         r.at[PC, 'wpos2'] = wpos[0]
         n = Counter(~pc.index.isin(cpos, level = 'cn'))
         if n[True] >= 2:
-            pc.drop(cpos, level = 'cn', inplace = True)
+            pc.drop(cpos, level = 'cname', inplace = True)
         ineg = pc.head(2).index.values
         wneg = [x[1] for x in ineg]
         r.at[PC, 'wneg1'] = wneg[0]
         r.at[PC, 'wneg2'] = wneg[1]
         
-    x.reset_index(inplace = True, drop = True)
-    x.set_index(wname, inplace = True)
+    #x.reset_index(inplace = True, drop = False)
+    #x.set_index(wname, inplace = True)
     
     if unpack:
         r = unpack_select(r)

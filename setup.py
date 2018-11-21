@@ -18,19 +18,20 @@ def get_version(relpath):
 
 setup(
     name = "tetramerpca",
-    version = get_version('tetramerpca.py'),
+    version = get_version('tetramerpca/tetramerpca.py'),
     author = "Ben Tupper",
     author_email = "btupper@bigelow.org",
     url = "https://github.com/BigelowLab/tetramerpcapy",
     description = ("Tetramer analysis with PCA"),
     py_modules=[
         'tetramerpca',
-        'tabulate',
+        'tab',
         'misc',
         'lut',
         'inout',
         'blast',
         'draw'],
+    packages=['tetramerpca'],
     license = "MIT",
     install_requires=[
         'click',
