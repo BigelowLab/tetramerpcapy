@@ -38,7 +38,7 @@ def select_outliers_pd_permissive(x, unpack = True):
     '''
     Selects 'outliers' from a [nwindow x nPC] dataframe using permissive reductions
     
-    index the input with cn (contigname) and wn (windowname)
+    index the input with cname (contigname) and wname (windowname)
 
     for each PC do:
 
@@ -123,7 +123,7 @@ def select_outliers_pd_permissive(x, unpack = True):
         cpos = [x[0] for x in ipos]
         r.at[PC, 'wpos1'] = wpos[1]
         r.at[PC, 'wpos2'] = wpos[0]
-        n = Counter(~pc.index.isin(cpos, level = 'cn'))
+        n = Counter(~pc.index.isin(cpos, level = 'cname'))
         if n[True] >= 2:
             pc.drop(cpos, level = 'cname', inplace = True)
         ineg = pc.head(2).index.values
