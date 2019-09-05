@@ -25,7 +25,7 @@ $ python setup.py install
 
 ### Script usage
 
-At a minimum
+At a minimum...
 
 ```
 $ tetramerpca filename
