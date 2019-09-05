@@ -31,7 +31,7 @@ At a minimum...
 $ tetramerpca filename
 ```
 
-where filename is a fully qualified path to a (possibly gzipped) FASTA file.
+... where filename is a fully qualified path to a (possibly gzipped) FASTA file.
 
 ```
 Usage: tetramerpca [OPTIONS] FILENAME
