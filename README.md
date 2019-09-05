@@ -7,7 +7,7 @@ This package is adapted from work originally done in perl-language by Alexander 
 
 ### Requirements:
 
- In addition to [Python](https://www.python.org) version 2.7+ and [blast](https://blast.ncbi.nlm.nih.gov) the following packages are required.
+ In addition to [Python](https://www.python.org) version 3+ and [blast](https://blast.ncbi.nlm.nih.gov) the following packages are required.
 
  + [Biopython](http://biopython.org/)
  + [click](http://click.pocoo.org/5/)
