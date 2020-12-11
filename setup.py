@@ -24,13 +24,7 @@ setup(
     url = "https://github.com/BigelowLab/tetramerpcapy",
     description = ("Tetramer analysis with PCA"),
     py_modules=[
-        'tetramerpca',
-        'tab',
-        'misc',
-        'lut',
-        'inout',
-        'blast',
-        'draw'],
+        'tetramerpca'],
     packages=['tetramerpca'],
     license = "MIT",
     install_requires=[
