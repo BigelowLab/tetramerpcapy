@@ -1,3 +1,5 @@
+For th most up-to-date version of this workflow, please use [tetramers](https://github.com/BigelowLab/tetramers)
+
 ## tetramerpcapy
 
 TeteramPCA detects outlier regions in genomes in terms of tetramer composition, which are indicative of either contamination or gene transfer.  Tertamers are
