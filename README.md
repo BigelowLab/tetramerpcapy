@@ -1,4 +1,4 @@
-For th most up-to-date version of this workflow, please use [tetramers](https://github.com/BigelowLab/tetramers)
+For the most up-to-date version of this workflow, please use [tetramers](https://github.com/BigelowLab/tetramers)
 
 ## tetramerpcapy
 
